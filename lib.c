@@ -1,131 +1,233 @@
 #include "lib.h"
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+
 
 /*----------------------------------- HELPER FUNCTIONS ----------------------------------*/
+/**
+ * @brief Prints a given array
+ *
+ * @param array
+ * @param length
+ */
 void print_array(double *array, int length) {
     if (array == NULL) {
         fprintf(stderr, "ERROR: Array in print_array is NULL\n");
         exit(EXIT_FAILURE);
     }
-    
+
     int i;
     for (i = 0; i < length; ++i) {
         fprintf(stdout, "%f\n", array[i]);
     }
-    
+
     return;
 }
 
-void check_inputs(int argc, char **argv) {
-    char **new_argv;
+/**
+ * @brief Validates length and args of the program
+ *
+ * @param length
+ * @param args
+ */
+int is_valid(int length, char **args) {
+    char **new_args;
     int i;
     int j;
-    /* char **alg_names; */
-    const unsigned int alg_name_size;
+    char *s;
+    char *ext;
+    int count;
 
-    char strings[][20] = {
-        "Hello",
-        "World",
-        "This is",
-        "An array",
-        "Of strings"
-    };
+    if (length != 5 && length != 7) {
+        fprintf(stderr, "ERROR: The program must be run as follows:\n");
+        fprintf(stderr, "main.o -alg [FIFO|SJF|PR|RR] [-quantum [integer (ms)]] -input [file name]\n");
+        return 1;
+    }
 
+    if (length == 7) {
+        return is_quantum(length, args);
+    }
 
-    /* if (argc != 5) { */
-    /*     fprintf(stderr, "ERROR: The program must be run as follows:\n"); */
-    /*     fprintf(stderr, "main.o -alg [FIFO|SJF|PR|RR] [-quantum [integer (ms)]] -input [file name]\n"); */
-    /*     exit(EXIT_FAILURE); */
-    /* } */
+    new_args = get_args(length, args);
 
-    new_argv = get_argv(argc, argv);
     char alg_names[][20] = {
         "fifo",
         "sjf",
-        "pr",
-        "rr"
+        "pr"
     };
 
-    char *s;
-    
+    if (strcmp(new_args[1],"-alg") != 0) {
+        fprintf(stderr, "ERROR: -alg flag must be specified\n");
+        return 1;
+    }
+
     /* lowercase the string */
-    s = get_element_from_new_argv(argc, new_argv, 2);
+    s = new_args[2];
     for (i = 0; s[i]; ++i) {
         s[i] = tolower(s[i]);
     }
-    
-    int count;
 
     count = 0;
-    for (i = 0; i < 4; ++i) {
+    for (i = 0; i < sizeof(alg_names)/sizeof(alg_names[0]); ++i) {
         if (strcmp(alg_names[i], s) == 0) {
-            fprintf(stdout, "Success!\n");
             ++count;
         }
     }
 
-    if (count != 0) {
+    if (count != 1) {
         fprintf(stderr, "ERROR: Given algorithm is not found\n");
-        exit(EXIT_FAILURE);
+        return 1;
     }
 
-    free(s);
-    free_new_argv(argc, new_argv);
+    if (strcmp(new_args[3], "-input") != 0) {
+        fprintf(stderr, "ERROR: -input flag must be typed\n");
+        return 1;
+    }
+
+    ext = strrchr(new_args[4], '.');
+    if (!ext) {
+        printf("%s\n", new_args[4]);
+        fprintf(stderr, "ERROR: Input file must have an extension\n");
+        return 1;
+    }
+
+    free_new_args(length, new_args);
+    return 0;
 }
 
-char **get_argv(int argc, char **argv) {
+/**
+ * @brief Validates length and args of the program is RR
+ *
+ * @param length
+ * @param args
+ */
+static int is_quantum(int length, char **args) {
+    int i;
+    char *alg;
+    char **new_args;
+    char *ext;
+
+    new_args = get_args(length, args);
+    if (strcmp(new_args[1],"-alg") != 0) {
+        fprintf(stderr, "ERROR: -alg flag must be specified\n");
+        return 1;
+    }
+
+    alg = new_args[2];
+    for (i = 0; alg[i]; ++i) {
+        alg[i] = tolower(alg[i]);
+    }
+
+    if (strcmp(alg, "rr") != 0) {
+        fprintf(stderr, "ERROR: Type RR algorithm when using -quantum flag\n");
+        return 1;
+    }
+
+    if (strcmp(new_args[3], "-quantum") != 0) {
+        fprintf(stderr, "ERROR: -quantum flag must be used when using RR\n");
+        return 1;
+    }
+
+    if (is_int(new_args[4]) != 0) {
+        fprintf(stderr, "ERROR: the given int after -quantum is not an integer\n");
+        return 1;
+    }
+
+    if (strcmp(new_args[5], "-input") != 0) {
+        fprintf(stderr, "ERROR: -input flag must be typed\n");
+        return 1;
+    }
+    
+    ext = strrchr(new_args[6], '.');
+    if (!ext) {
+        printf("%s\n", new_args[6]);
+        fprintf(stderr, "ERROR: Input file must have an extension\n");
+        return 1;
+    }
+
+    free_new_args(length, new_args);
+    return 0;
+}
+
+static int is_int(char *str) {
+    char *endptr;
+    errno = 0;  // Initialize errno before the call
+
+    long value = strtol(str, &endptr, 10); // Base 10
+
+    // Check for strtol errors
+    if ((errno == ERANGE && (value == LONG_MAX || value == LONG_MIN)) ||
+            (errno != 0 && value == 0)) {
+        return 1; // Conversion error occurred
+    }
+
+    // Check if the entire string was converted (no extra characters)
+    if (*endptr != '\0') {
+        return 1; // Extra characters in the string
+    }
+
+    return 0; // Successfully converted to an integer
+}
+
+/*
+ * Gets args and returns a copied new args
+ */
+char **get_args(int length, char **args) {
     static int i;
-    char **new_argv = malloc((argc + 1) * sizeof(*new_argv));
-    for (i = 0; i < argc; ++i) {
-        size_t length = strlen(argv[i]) + 1;
-        new_argv[i] = malloc(length);
-        memcpy(new_argv[i], argv[i], length);
+    char **new_args = malloc((length + 1) * sizeof(*new_args));
+    for (i = 0; i < length; ++i) {
+        size_t length = strlen(args[i]) + 1;
+        new_args[i] = malloc(length);
+        memcpy(new_args[i], args[i], length);
     }
-    new_argv[argc] = NULL;
-    return new_argv;
+    new_args[length] = NULL;
+    return new_args;
 }
 
-char *get_element_from_new_argv(int argc, char **new_argv, int element_index) {
+/*
+ * Gets an element from the new args
+ */
+char *get_element_from_new_args(int length, char **new_args, int element_index) {
     static int i;
     char *result_str;
-    
-    if (element_index >= argc || element_index < 0) {
+
+    if (element_index >= length || element_index < 0) {
         fprintf(stderr, "ERROR: Fetching index out of bounds, returning -1\n");
         exit(EXIT_FAILURE);
     }
 
-    for (i = 0; i < argc; ++i) {
+    for (i = 0; i < length; ++i) {
         if (element_index == i) {
-            size_t length = strlen(new_argv[i]) + 1;
+            size_t length = strlen(new_args[i]) + 1;
             result_str = malloc(length);
-            memcpy(result_str, new_argv[i], length);
+            memcpy(result_str, new_args[i], length);
             return result_str;
         }
-        
+
     }
 
-    fprintf(stderr, "ERROR: Condition should not have been reached, element not found in new_argv\n");
+    fprintf(stderr, "ERROR: Condition should not have been reached, element not found in new_args\n");
     exit(EXIT_FAILURE);
 }
 
-void print_new_argv(int argc, char **new_argv) {
+/*
+ * Prints out the new args
+ */
+void print_new_args(int length, char **new_args) {
     static int i;
 
-    for (i = 0; i < argc; ++i) {
-        fprintf(stdout, "%s\n", new_argv[i]);
+    for (i = 0; i < length; ++i) {
+        fprintf(stdout, "%s\n", new_args[i]);
     }
 }
 
-void free_new_argv(int argc, char **argv) {
+/*
+ * Frees the copied args, use only when done using the new args
+ */
+void free_new_args(int length, char **args) {
     static int i;
-    for (i = 0; i < argc; ++i) {
-        free(argv[i]);
+    for (i = 0; i < length; ++i) {
+        free(args[i]);
     }
-    free(argv);
+    free(args);
 }
 
 
@@ -133,3 +235,21 @@ void free_new_argv(int argc, char **argv) {
 
 
 /* ------------------------------- THREAD FUNCTIONS -------------------------------------*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

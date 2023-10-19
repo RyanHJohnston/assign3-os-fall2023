@@ -1,4 +1,6 @@
 #include "lib.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 /* -------- DIRECTIONS ----------------*/
 /*
@@ -20,7 +22,11 @@
 
 int main(int argc, char *argv[]) {
     
-    check_inputs(argc, argv);
+    if (is_valid(argc, argv) == 1) {
+        printf("failure\n");
+    } else {
+        printf("success\n");
+    }
 
     
     return 0;
