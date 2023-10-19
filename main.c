@@ -1,4 +1,4 @@
-#include "lib.h"
+#include "lib/lib.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -22,12 +22,12 @@
 
 int main(int argc, char *argv[]) {
     
-    if (is_valid(argc, argv) == 1) {
-        printf("failure\n");
-    } else {
-        printf("success\n");
+    if (is_valid(argc, argv) == FAILURE) {
+        return FAILURE;
     }
-
     
-    return 0;
+    
+    
+    
+    return SUCCESS;
 }

@@ -35,11 +35,12 @@ int is_valid(int length, char **args) {
     char *s;
     char *ext;
     int count;
+    
 
     if (length != 5 && length != 7) {
         fprintf(stderr, "ERROR: The program must be run as follows:\n");
         fprintf(stderr, "main.o -alg [FIFO|SJF|PR|RR] [-quantum [integer (ms)]] -input [file name]\n");
-        return 1;
+        return FAILURE;
     }
 
     if (length == 7) {
@@ -56,7 +57,7 @@ int is_valid(int length, char **args) {
 
     if (strcmp(new_args[1],"-alg") != 0) {
         fprintf(stderr, "ERROR: -alg flag must be specified\n");
-        return 1;
+        return FAILURE;
     }
 
     /* lowercase the string */
@@ -74,19 +75,19 @@ int is_valid(int length, char **args) {
 
     if (count != 1) {
         fprintf(stderr, "ERROR: Given algorithm is not found\n");
-        return 1;
+        return FAILURE;
     }
 
     if (strcmp(new_args[3], "-input") != 0) {
         fprintf(stderr, "ERROR: -input flag must be typed\n");
-        return 1;
+        return FAILURE;
     }
 
     ext = strrchr(new_args[4], '.');
     if (!ext) {
         printf("%s\n", new_args[4]);
         fprintf(stderr, "ERROR: Input file must have an extension\n");
-        return 1;
+        return FAILURE;
     }
 
     free_new_args(length, new_args);
@@ -108,7 +109,7 @@ static int is_quantum(int length, char **args) {
     new_args = get_args(length, args);
     if (strcmp(new_args[1],"-alg") != 0) {
         fprintf(stderr, "ERROR: -alg flag must be specified\n");
-        return 1;
+        return FAILURE;
     }
 
     alg = new_args[2];
@@ -118,53 +119,57 @@ static int is_quantum(int length, char **args) {
 
     if (strcmp(alg, "rr") != 0) {
         fprintf(stderr, "ERROR: Type RR algorithm when using -quantum flag\n");
-        return 1;
+        return FAILURE;
     }
 
     if (strcmp(new_args[3], "-quantum") != 0) {
         fprintf(stderr, "ERROR: -quantum flag must be used when using RR\n");
-        return 1;
+        return FAILURE;
     }
 
     if (is_int(new_args[4]) != 0) {
         fprintf(stderr, "ERROR: the given int after -quantum is not an integer\n");
-        return 1;
+        return FAILURE;
     }
 
     if (strcmp(new_args[5], "-input") != 0) {
         fprintf(stderr, "ERROR: -input flag must be typed\n");
-        return 1;
+        return FAILURE;
     }
     
     ext = strrchr(new_args[6], '.');
     if (!ext) {
         printf("%s\n", new_args[6]);
         fprintf(stderr, "ERROR: Input file must have an extension\n");
-        return 1;
+        return FAILURE;
     }
 
     free_new_args(length, new_args);
-    return 0;
+    return SUCCESS;
 }
 
+/**
+ * @brief Checks if given str is an int
+ *
+ * @param str
+ * @return SUCCESS
+ */
 static int is_int(char *str) {
     char *endptr;
-    errno = 0;  // Initialize errno before the call
+    errno = 0;
 
     long value = strtol(str, &endptr, 10); // Base 10
 
-    // Check for strtol errors
     if ((errno == ERANGE && (value == LONG_MAX || value == LONG_MIN)) ||
             (errno != 0 && value == 0)) {
-        return 1; // Conversion error occurred
+        return FAILURE; 
     }
 
-    // Check if the entire string was converted (no extra characters)
     if (*endptr != '\0') {
-        return 1; // Extra characters in the string
+        return FAILURE; 
     }
 
-    return 0; // Successfully converted to an integer
+    return SUCCESS; 
 }
 
 /*
@@ -229,6 +234,9 @@ void free_new_args(int length, char **args) {
     }
     free(args);
 }
+
+/* ------------------------------- DATA STRUCTURE FUNCTIONS ---------------------------- */
+
 
 
 
