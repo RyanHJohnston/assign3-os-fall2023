@@ -32,4 +32,7 @@ PCB *new_proc(int PID, int PR, int numCPUBurst, int numIOBurst,
         struct timespec ts_begin, struct timespec ts_end,
         struct PCB *prev, struct PCB *next);
 
+/* generates a random PID 1 - 1000 */
+int gen_rand_pid();
+
 #endif

@@ -18,7 +18,6 @@
 #define SUCCESS 0
 #define FAILURE 1
 
-
 /* NOTE: Each of the three threads in the MainThread will process each item in the data structures
  * ex. FileReadThread will process an item in ReadyQueue and repeat until it's empty
  * this goes for CPUSchedulerThread and IOSystemThread
@@ -54,9 +53,9 @@
  * ex.
  * 
  * PCB {
- *   numCPUBurst = 4
- *   numIOBurst = 3
- *   CPUBurst = 10, 10, 20, 10
+ *   numCPUBurst = 4 (it's just # of numbers divided by 2+1, so it's 7/4 in this case)
+ *   numIOBurst = 3 (it's just # of numbers divided by 2, so it's 7/2 in this case)
+ *   CPUBurst = 10, 10, 20, 10 (pattern is CPUBUrst, IOBurst, CPUBurst, IOBurst, etc)
  *   IOBurst = 20, 50, 40
  *   cpuindex = 0
  *   ioindex = 0
@@ -73,7 +72,7 @@
 
 /* ----------- BASIC FUNCTIONS ---------------- */
 
-void print_array(double *array, int length);
+void print_array(int *array, int length);
 int is_valid(int arg, char **argk);
 static int is_quantum(int length, char **args);
 static int is_int(char *str);

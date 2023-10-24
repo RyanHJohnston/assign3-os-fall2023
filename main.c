@@ -28,8 +28,8 @@
 
 int main(int argc, char *argv[]) {
     
-    if (is_valid(argc, argv) == FAILURE) {
-        return FAILURE;
+    if (is_valid(argc, argv) == 1) {
+        return 1;
     }
 
     
@@ -46,10 +46,6 @@ int main(int argc, char *argv[]) {
     /* add to ready queue */
     int i;
     
-    for (i = 0; i < argc; ++i) {
-        printf("%s\n", argv[i]);
-    }
-    
     main_thread = (MainThread*)malloc(sizeof(MainThread));
     
     /* not RR */
@@ -63,11 +59,12 @@ int main(int argc, char *argv[]) {
         main_thread->algorithm = argv[2];
         main_thread->quantum = 0;
         main_thread->inputFile->filename = argv[4]; 
-
+        main_thread->inputFile->ready_q = (ReadyQueue*)malloc(sizeof(ReadyQueue));
+        init_ready_queue(main_thread->inputFile->ready_q);
+        
         pthread_create(&tid1, NULL, read_file, (void *)main_thread->inputFile);
         pthread_join(tid1, (void **)&main_thread->inputFile);
         
-
 
     } else { // RR
         printf("Else was reached\n");
@@ -78,5 +75,5 @@ int main(int argc, char *argv[]) {
     free(main_thread);
 
     
-    return SUCCESS;
+    return 0;
 }

@@ -8,7 +8,7 @@
  * @param array
  * @param length
  */
-void print_array(double *array, int length) {
+void print_array(int *array, int length) {
     if (array == NULL) {
         fprintf(stderr, "ERROR: Array in print_array is NULL\n");
         exit(EXIT_FAILURE);
@@ -16,7 +16,7 @@ void print_array(double *array, int length) {
 
     int i;
     for (i = 0; i < length; ++i) {
-        fprintf(stdout, "%f\n", array[i]);
+        fprintf(stdout, "%d\n", array[i]);
     }
 
     return;
