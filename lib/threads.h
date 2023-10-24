@@ -1,8 +1,13 @@
 #ifndef THREADS_H_
 #define THREADS_H_
 
+#include "lib.h"
 #include "proc.h"
 #include "queue.h"
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /*
  * File read thread
@@ -10,7 +15,7 @@
  */
 typedef struct FileReadThread {
     char *filename;
-    
+    PCB *proc;
 } FileRead;
 
 
@@ -22,7 +27,7 @@ typedef struct CPUSchedulerThread {
  * This will only use FIFO
  */
 typedef struct IOSystemThread {
-    
+
 } IOSystem;
 
 
@@ -37,11 +42,15 @@ typedef struct MainThread {
     char *algorithm;
     int quantum;
     FileRead *inputFile;
-    ReadyQueue *readyQueue;
-    IOQueue *ioQueue;
-    DoublyLinkedList *linkedList;
-} Main;
+    /* CPUScheduler *cpuSched; */
+    /* IOSystem *ioSystem; */
+    /* ReadyQueue *readyQueue; */
+    /* IOQueue *ioQueue; */
+    /* DoublyLinkedList *linkedList; */
+} MainThread;
 
+
+void *read_file(void *f);
 
 
 

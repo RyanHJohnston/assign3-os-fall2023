@@ -2,6 +2,7 @@
 #define PROC_H_
 
 #include <time.h>
+#include "lib.h"
 
 typedef struct PCB {
     int PID;
@@ -26,5 +27,9 @@ typedef struct PCB {
     /* use the system time to determine how much waited etc */
 } PCB;
 
+PCB *new_proc(int PID, int PR, int numCPUBurst, int numIOBurst, 
+        int *CPUBurst, int *IOBurst, int cpuindex, int ioindex,
+        struct timespec ts_begin, struct timespec ts_end,
+        struct PCB *prev, struct PCB *next);
 
 #endif

@@ -11,9 +11,9 @@
 #include <stdbool.h>
 #include <time.h>
 
-#include "threads.h"
-#include "queue.h"
-#include "proc.h"
+/* #include "threads.h" */
+/* #include "queue.h" */
+/* #include "proc.h" */
 
 #define SUCCESS 0
 #define FAILURE 1
