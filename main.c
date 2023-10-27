@@ -59,11 +59,13 @@ int main(int argc, char *argv[]) {
         main_thread->algorithm = argv[2];
         main_thread->quantum = 0;
         main_thread->inputFile->filename = argv[4]; 
-        main_thread->inputFile->ready_q = (ReadyQueue*)malloc(sizeof(ReadyQueue));
-        init_ready_queue(main_thread->inputFile->ready_q);
+        main_thread->ready_q = (ReadyQueue*)malloc(sizeof(ReadyQueue));
+        init_ready_queue(main_thread->ready_q);
+
+        pthread_create(&tid1, NULL, read_file, (void *)main_thread);
+        pthread_join(tid1, (void **)&main_thread);
         
-        pthread_create(&tid1, NULL, read_file, (void *)main_thread->inputFile);
-        pthread_join(tid1, (void **)&main_thread->inputFile);
+        displayQueue(main_thread->ready_q);
         
 
     } else { // RR

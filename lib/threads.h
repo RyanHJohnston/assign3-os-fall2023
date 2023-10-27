@@ -48,7 +48,7 @@ typedef struct Line {
 typedef struct FileReadThread {
     char *filename;
     PCB *proc;
-    ReadyQueue *ready_q;
+    /* ReadyQueue *ready_q; */
 } FileRead;
 
 
@@ -75,6 +75,7 @@ typedef struct MainThread {
     char *algorithm;
     int quantum;
     FileRead *inputFile;
+    ReadyQueue *ready_q;
     /* CPUScheduler *cpuSched; */
     /* IOSystem *ioSystem; */
     /* ReadyQueue *readyQueue; */

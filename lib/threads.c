@@ -9,7 +9,8 @@
 #include <string.h>
 
 void *read_file(void *f) {
-    FileRead *ftemp;
+    /* FileRead *ftemp; */
+    MainThread *temp;
     int i;
     FILE *fp;
     char ch;
@@ -21,10 +22,11 @@ void *read_file(void *f) {
     long sleep_time_ms;
 
     printf("file read reached\n");
-    ftemp = (FileRead*)f;
-    fp = fopen(ftemp->filename, "r");
+    /* ftemp = (FileRead*)f; */
+    temp = (MainThread*)f;
+    fp = fopen(temp->inputFile->filename, "r");
     if (fp == NULL) {
-        fprintf(stderr, "ERROR: Unable to open file %s\n", ftemp->filename);
+        fprintf(stderr, "ERROR: Unable to open file %s\n", temp->inputFile->filename);
         pthread_exit(NULL);
     }
 
@@ -36,9 +38,9 @@ void *read_file(void *f) {
 
     fclose(fp);
 
-    fp = fopen(ftemp->filename, "r");
+    fp = fopen(temp->inputFile->filename, "r");
     if (fp == NULL) {
-        fprintf(stderr, "ERROR: Unable to open file %s\n", ftemp->filename);
+        fprintf(stderr, "ERROR: Unable to open file %s\n", temp->inputFile->filename);
         pthread_exit(NULL);
     }
     
@@ -63,58 +65,60 @@ void *read_file(void *f) {
                 fclose(fp);
                 pthread_exit(NULL);
             }
-
+            
             /* copy data from static array to dynamic array */
             for (i = 0; i < currentLine.data.processData.count; ++i) {
                 currentLine.data.processData.values[i] = temp_values[i];
             }
 
             /* printf("Processed 'proc' with %d integers\n", currentLine.data.processData.count); */
-    
             /* assign and/or allocate set up PCB variables */
-            ftemp->proc = malloc(sizeof(*ftemp->proc));
-            ftemp->proc->PID = gen_rand_pid();
-            ftemp->proc->PR = currentLine.data.processData.values[0];
-            ftemp->proc->numCPUBurst = currentLine.data.processData.values[1] / 2+1;
-            ftemp->proc->numIOBurst = currentLine.data.processData.values[1] / 2;
-            ftemp->proc->CPUBurst = malloc(sizeof(int) * ftemp->proc->numCPUBurst);
-            ftemp->proc->IOBurst = malloc(sizeof(int) * ftemp->proc->numIOBurst);
-            
+            temp->inputFile->proc = malloc(sizeof(*temp->inputFile->proc));
+            temp->inputFile->proc->PID = gen_rand_pid();
+            temp->inputFile->proc->PR = currentLine.data.processData.values[0];
+            temp->inputFile->proc->numCPUBurst = currentLine.data.processData.values[1] / 2+1;
+            temp->inputFile->proc->numIOBurst = currentLine.data.processData.values[1] / 2;
+            temp->inputFile->proc->CPUBurst = malloc(sizeof(int) * temp->inputFile->proc->numCPUBurst);
+            temp->inputFile->proc->IOBurst = malloc(sizeof(int) * temp->inputFile->proc->numIOBurst);
+
             /* get values to the dynamic arrays */
 
             /* get cpu bursts */
-            count = ftemp->proc->numCPUBurst;
+            count = temp->inputFile->proc->numCPUBurst;
             for (i = 0; i < count; ++i) {
                 /* printf("Value %d Index %i\n", currentLine.data.processData.values[2 + i*2], 2 + i*2); */
-                ftemp->proc->CPUBurst[i] = currentLine.data.processData.values[2 + i*2];
+                temp->inputFile->proc->CPUBurst[i] = currentLine.data.processData.values[2 + i*2];
             }
             
             /* get io bursts */
-            count = ftemp->proc->numIOBurst;
+            count = temp->inputFile->proc->numIOBurst;
             for (i = 0; i < count; ++i) {
                 /* printf("Value %d Index %i\n", currentLine.data.processData.values[3 + i*2], 3 + i*2); */
-                ftemp->proc->IOBurst[i] = currentLine.data.processData.values[3 + i*2];
+                temp->inputFile->proc->IOBurst[i] = currentLine.data.processData.values[3 + i*2];
             }
             
             /* assign cpuindex and ioindex for PCB */
-            ftemp->proc->cpuindex = 0;
-            ftemp->proc->ioindex = 0;
+            temp->inputFile->proc->cpuindex = 0;
+            temp->inputFile->proc->ioindex = 0;
             
             clock_gettime(CLOCK_MONOTONIC, &ts_end);
-            ftemp->proc->ts_begin = ts_begin;
-            ftemp->proc->ts_end = ts_end;
+            temp->inputFile->proc->ts_begin = ts_begin;
+            temp->inputFile->proc->ts_end = ts_end;
             
             /* prev and next PCB are NULL for now, not sure what to do with them */
-            ftemp->proc->prev = NULL;
-            ftemp->proc->next = NULL;
+            /* i think this will be for the doubly linked list */
+            temp->inputFile->proc->prev = NULL;
+            temp->inputFile->proc->next = NULL;
 
             /* add PCB to ready queue */
-            enqueue(ftemp->ready_q, ftemp->proc);
+            /* enqueue(temp->inputFile->ready_q, temp->inputFile->proc); */
+            /* enqueue(temp->ready_q, temp->inputFile->proc); */
+            enqueue(temp->ready_q, temp->inputFile->proc);
 
             /* free memory */
             free(currentLine.data.processData.values);
-            free(ftemp->proc->CPUBurst);
-            free(ftemp->proc);
+            free(temp->inputFile->proc->CPUBurst);
+            free(temp->inputFile->proc);
 
         } else if (strcmp(type_str, "sleep") == 0) {
             currentLine.type = TYPE_SLEEP;
@@ -125,7 +129,7 @@ void *read_file(void *f) {
             printf("Processed 'stop: exiting...\n");
             break;
         } else {
-            fprintf(stderr, "ERROR: No enums were met when reading %s\n", ftemp->filename);
+            fprintf(stderr, "ERROR: No enums were met when reading %s\n", temp->inputFile->filename);
             exit(EXIT_FAILURE);
         }
     }

@@ -11,17 +11,30 @@ int is_empty(ReadyQueue *q) {
 }
 
 void enqueue(ReadyQueue *q, PCB *p) {
-    PCB *temp;
-
-    temp = p;
+    PCB *temp_p;
+    
+    printf("assign vals reached\n");
+    temp_p = (PCB*)malloc(sizeof(PCB));
+    temp_p->PID = p->PID;
+    temp_p->PR = p->PR;
+    temp_p->numCPUBurst = p->numCPUBurst;
+    temp_p->numIOBurst = p->numIOBurst;
+    temp_p->CPUBurst = p->CPUBurst;
+    temp_p->IOBurst = p->IOBurst;
+    temp_p->cpuindex = p->cpuindex;
+    temp_p->ioindex = p->ioindex;
+    temp_p->ts_begin = p->ts_begin;
+    temp_p->ts_end = p->ts_end;
+    temp_p->next = temp_p->next;
+    temp_p->prev = temp_p->prev;
 
     if (q->rear == NULL) {
-        q->front = q->rear = temp;
+        q->front = q->rear = temp_p;
         return;
     }
 
-    q->rear->next = temp;
-    q->rear = temp;
+    q->rear->next = temp_p;
+    q->rear = temp_p;
 }
 
 void dequeue(ReadyQueue *q, PCB *p) {
@@ -66,17 +79,15 @@ int io_is_empty(IOQueue *q) {
 }
 
 void io_enqueue(IOQueue *q, PCB *p) {
-    PCB *temp;
-
-    temp = p;
+    PCB *temp_p;
 
     if (q->rear == NULL) {
-        q->front = q->rear = temp;
+        q->front = q->rear = temp_p;
         return;
     }
 
-    q->rear->next = temp;
-    q->rear = temp;
+    q->rear->next = temp_p;
+    q->rear = temp_p;
 }
 
 void io_dequeue(IOQueue *q, PCB *p) {
