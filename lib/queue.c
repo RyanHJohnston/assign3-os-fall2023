@@ -77,9 +77,9 @@ PCB *dequeue(ReadyQueue *q) {
         q->front->prev = NULL;  // Set the prev pointer of the new front to NULL
     }
 
-    free(toFree->CPUBurst);
-    free(toFree->IOBurst);
-    free(toFree);
+    /* free(toFree->CPUBurst); */
+    /* free(toFree->IOBurst); */
+    /* free(toFree); */
 
     // Clear out next and prev pointers from the copied PCB
     temp->next = NULL;
