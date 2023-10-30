@@ -4,6 +4,7 @@
 #include "lib/threads.h"
 #include <bits/pthreadtypes.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,30 +51,40 @@ int main(int argc, char *argv[]) {
     
     /* not RR */
     if (argc == 5) {
-        main_thread->inputFile = (FileRead*)malloc(sizeof(FileRead));
-        if (main_thread->inputFile == NULL) {
-            fprintf(stderr, "ERROR: main_thread->inputFile is NULL\n");
+        main_thread->input_file = (FileRead*)malloc(sizeof(FileRead));
+        if (main_thread->input_file == NULL) {
+            fprintf(stderr, "ERROR: main_thread->input_file is NULL\n");
             exit(EXIT_FAILURE);
         }
 
-        main_thread->algorithm = argv[2];
-        main_thread->quantum = 0;
-        main_thread->inputFile->filename = argv[4]; 
+        main_thread->alg = argv[2];
+        main_thread->quant = 0;
+        main_thread->input_file->filename = argv[4]; 
         main_thread->ready_q = (ReadyQueue*)malloc(sizeof(ReadyQueue));
+        main_thread->cpu_sch = (CPUScheduler*)malloc(sizeof(CPUScheduler));        
         init_ready_queue(main_thread->ready_q);
-
+        
+        /* create semaphore for following threads  */
+        sem_init(&main_thread->sem_name, 0, 0);
+        
+        
+        /* File read thread & cpu sched thread */
         pthread_create(&tid1, NULL, read_file, (void *)main_thread);
+        pthread_create(&tid2, NULL, cpu_scheduler, (void *)main_thread);
+        
         pthread_join(tid1, (void **)&main_thread);
+        pthread_join(tid2, (void **)&main_thread);
         
-        displayQueue(main_thread->ready_q);
+        sem_destroy(&main_thread->sem_name);
         
+        printf("sch thread done\n");
 
     } else { // RR
         printf("Else was reached\n");
     }
     
     /* free_new_args(argc, new_argv); */
-    free(main_thread->inputFile);
+    free(main_thread->input_file);
     free(main_thread);
 
     

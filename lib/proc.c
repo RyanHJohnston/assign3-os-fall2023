@@ -24,5 +24,3 @@ PCB *new_proc(int PID, int PR, int numCPUBurst, int numIOBurst,
 }
 
 
-
-

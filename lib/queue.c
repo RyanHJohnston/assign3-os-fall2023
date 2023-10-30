@@ -1,6 +1,8 @@
 #include "queue.h"
 #include "proc.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 void init_ready_queue(ReadyQueue *q) {
     q->front = q->rear = NULL;
@@ -37,22 +39,57 @@ void enqueue(ReadyQueue *q, PCB *p) {
     q->rear = temp_p;
 }
 
-void dequeue(ReadyQueue *q, PCB *p) {
-    if (is_empty(q)) {
-        fprintf(stderr, "ERROR: Queue is empty\n");
-        return;
+PCB *dequeue(ReadyQueue *q) {
+    if (is_empty(q) == 1) {
+        fprintf(stderr, "ERROR: Ready queue is empty when calling dequeue\n");
+        return NULL;
     }
 
-    PCB *temp;
-
-    temp = q->front;
-    while (temp != NULL) {
-        temp = temp->next;
+    PCB *temp = (PCB*)malloc(sizeof(PCB));
+    if (temp == NULL) {
+        fprintf(stderr, "ERROR: Failed to allocate memory for temp in dequeue\n");
+        return NULL;
     }
-    printf("NULL\n");
+
+    // Deep copy from the front PCB to temp
+    *temp = *q->front;  // This will copy all fields shallowly
+
+    temp->CPUBurst = malloc(sizeof(int) * q->front->numCPUBurst);
+    temp->IOBurst = malloc(sizeof(int) * q->front->numIOBurst);
+
+    if (temp->CPUBurst == NULL || temp->IOBurst == NULL) {
+        fprintf(stderr, "ERROR: memory was not properly allocated to arrays in the dequeue\n");
+        free(temp->CPUBurst);  // It's safe to free a NULL pointer, so no need to check
+        free(temp->IOBurst);
+        free(temp);
+        return NULL;
+    }
+
+    memcpy(temp->CPUBurst, q->front->CPUBurst, sizeof(int) * q->front->numCPUBurst);
+    memcpy(temp->IOBurst, q->front->IOBurst, sizeof(int) * q->front->numIOBurst);
+
+    // Remove the front PCB from the ReadyQueue and free its memory
+    PCB *toFree = q->front;
+    q->front = q->front->next;
+    if (q->front == NULL) {
+        q->rear = NULL;
+    } else {
+        q->front->prev = NULL;  // Set the prev pointer of the new front to NULL
+    }
+
+    free(toFree->CPUBurst);
+    free(toFree->IOBurst);
+    free(toFree);
+
+    // Clear out next and prev pointers from the copied PCB
+    temp->next = NULL;
+    temp->prev = NULL;
+
+    return temp;
+
 }
 
-void displayQueue(ReadyQueue *q) {
+void display_queue(ReadyQueue *q) {
     if (is_empty(q)) {
         fprintf(stderr, "Ready Queue is empty\n");
         return;
@@ -105,7 +142,7 @@ void io_dequeue(IOQueue *q, PCB *p) {
     printf("NULL\n");
 }
 
-void io_displayQueue(IOQueue *q) {
+void io_display_queue(IOQueue *q) {
     if (io_is_empty(q)) {
         fprintf(stderr, "Ready Queue is empty\n");
         return;

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <semaphore.h>
 
 #define MAX_LINE_LEN 256
 #define PID_MAX 999
@@ -53,7 +54,8 @@ typedef struct FileReadThread {
 
 
 typedef struct CPUSchedulerThread {
-
+    char *alg;
+    
 } CPUScheduler;
 
 /*
@@ -72,20 +74,19 @@ typedef struct IOSystemThread {
  * print performance metrics
  */
 typedef struct MainThread {
-    char *algorithm;
-    int quantum;
-    FileRead *inputFile;
-    ReadyQueue *ready_q;
-    /* CPUScheduler *cpuSched; */
-    /* IOSystem *ioSystem; */
-    /* ReadyQueue *readyQueue; */
-    /* IOQueue *ioQueue; */
-    /* DoublyLinkedList *linkedList; */
+    char *alg;
+    int quant;
+    FileRead *input_file;
+    CPUScheduler *cpu_sch;
+    /* IOSystem *io_sys; */
+      ReadyQueue *ready_q;
+    /* IOQueue *io_q; */
+    /* DoublyLinkedList *ll; */
+    sem_t sem_name;
 } MainThread;
 
 
 void *read_file(void *f);
-
-
+void *cpu_scheduler(void *f);
 
 #endif

@@ -36,5 +36,4 @@ PCB *new_proc(int PID, int PR, int numCPUBurst, int numIOBurst,
 int gen_rand_pid();
 PCB *get_proc_by_id(int PID);
 
-
 #endif
