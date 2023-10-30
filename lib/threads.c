@@ -2,7 +2,6 @@
 #include "lib.h"
 #include "proc.h"
 #include "queue.h"
-#include <bits/types/cookie_io_functions_t.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -177,10 +176,7 @@ void *cpu_scheduler(void *arg) {
                     fprintf(stderr, "ERROR: failed to dequeue process\n");
                     continue;
                 }
-                
-                display_queue(main_thread->ready_q);
                 /* simulate the process */
-                
                 
 
                 
