@@ -67,12 +67,11 @@ int main(int argc, char *argv[]) {
         /* create semaphore for following threads  */
         sem_init(&main_thread->sem_name, 0, 0);
         
-        
         /* File read thread & cpu sched thread */
         pthread_create(&tid1, NULL, read_file, (void *)main_thread);
-        pthread_create(&tid2, NULL, cpu_scheduler, (void *)main_thread);
-        
         pthread_join(tid1, (void **)&main_thread);
+        
+        pthread_create(&tid2, NULL, cpu_scheduler, (void *)main_thread);
         pthread_join(tid2, (void **)&main_thread);
         
         sem_destroy(&main_thread->sem_name);

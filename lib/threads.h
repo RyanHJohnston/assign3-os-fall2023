@@ -87,6 +87,6 @@ typedef struct MainThread {
 
 
 void *read_file(void *f);
-void *cpu_scheduler(void *f);
+void *cpu_scheduler(void *arg);
 
 #endif

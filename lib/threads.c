@@ -4,6 +4,7 @@
 #include "queue.h"
 #include <bits/types/cookie_io_functions_t.h>
 #include <pthread.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -156,42 +157,55 @@ void *read_file(void *f) {
  * or just terminate if this is the last CPU burst.  
  * Then CPU scheduler thread will check ready queue again and repeat the same for the next process. 
  * */
-void *cpu_scheduler(void *f) {
-    MainThread *temp;
+void *cpu_scheduler(void *arg) {
+    MainThread *main_thread;
 
 
-    temp = (MainThread*)f;
-    
-    printf("is empty? value = %i\n", is_empty(temp->ready_q));
-    
-    /* this will be done using a while(1) loop */
-    if (is_empty(temp->ready_q) == 0) {
-        fprintf(stderr, "ERROR: ready queue is empty\n");
-        pthread_exit(NULL);
+    main_thread = (MainThread*)arg;
+
+
+    while (true) {
+        /* this will be done using a while(1) loop */
+        if (!is_empty(main_thread->ready_q)) {
+            /* check algorithm name */
+            if (strcmp(main_thread->alg, "FIFO") == 0) {
+                /* fifo alg */ 
+                printf("%s detected\n", main_thread->alg);
+                PCB *p;
+                p = dequeue(main_thread->ready_q);
+                if (p == NULL) {
+                    fprintf(stderr, "ERROR: failed to dequeue process\n");
+                    continue;
+                }
+                
+                display_queue(main_thread->ready_q);
+                /* simulate the process */
+                
+                
+
+                
+                /* once done with handling process in cpu scheduler, add to io queue */
+            } else if (strcmp(main_thread->alg, "SJF") == 0) {
+                /* sjf alg */
+                printf("%s detected\n", main_thread->alg);
+            } else if (strcmp(main_thread->alg, "PR") == 0) {
+                /* pr alg */
+                printf("%s detected\n", main_thread->alg);
+            } else if (strcmp(main_thread->alg, "RR") == 0) {
+                /* pr alg */
+                printf("%s detected\n", main_thread->alg);
+            } else {
+                fprintf(stderr, "ERROR: Algorithm not detected in CPUScheduler thread\n");
+                pthread_exit(NULL);
+            }
+        } else {
+            printf("\n QUEUE IS EMPTY, EXITING SCHEDULER\n");
+            pthread_exit(arg);
+        }
     }
-
-    /* check algorithm name */
-    if (strcmp(temp->alg, "FIFO") == 0) {
-        /* fifo alg */ 
-        
-        printf("%s detected\n", temp->alg);
-        
-    } else if (strcmp(temp->alg, "SJF") == 0) {
-        /* sjf alg */
-        printf("%s detected\n", temp->alg);
-    } else if (strcmp(temp->alg, "PR") == 0) {
-        /* pr alg */
-        printf("%s detected\n", temp->alg);
-    } else if (strcmp(temp->alg, "RR") == 0) {
-        /* pr alg */
-        printf("%s detected\n", temp->alg);
-    } else {
-        fprintf(stderr, "ERROR: Algorithm not detected in CPUScheduler thread\n");
-        pthread_exit(NULL);
-    }
-
     
-    pthread_exit(f);
+    fprintf(stderr, "ERROR: Not condition was met in the CPU scheduler, fix this!!!!\n");
+    pthread_exit(NULL);
 }
 
 

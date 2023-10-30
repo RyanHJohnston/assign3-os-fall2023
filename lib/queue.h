@@ -30,7 +30,7 @@ void display_queue(ReadyQueue *q);
 void init_io_queue(IOQueue *q);
 int io_is_empty(IOQueue *q);
 void io_enqueue(IOQueue *q, PCB *p);
-void io_dequeue(IOQueue *q, PCB *p);
+PCB *io_dequeue(IOQueue *q);
 void io_display_queue(IOQueue *q);
 
 /* doubly linked list functions */

@@ -1,3 +1,0 @@
-10/19/23
-Try to set up the FIFO algorithm for each thread struct first.
-Just write the fileread thread to process each line in the input.txt as a PCB
