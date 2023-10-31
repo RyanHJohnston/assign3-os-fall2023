@@ -10,12 +10,13 @@
 #include <string.h>
 #include <time.h>
 #include <semaphore.h>
+#include <unistd.h>
 
 #define MAX_LINE_LEN 256
 #define PID_MAX 999
 #define PID_MIN 1
 #define DELIM " \n\t"
-
+#define MS_CONVERT 1000
 
 typedef enum LineType{
     TYPE_PROC,
@@ -29,7 +30,7 @@ typedef struct ProcessData{
 } ProcessData;
 
 typedef struct SleepData{
-    int duration;
+    unsigned int duration;
 } SleepData;
 
 typedef union LineData{
@@ -79,8 +80,8 @@ typedef struct MainThread {
     FileRead *input_file;
     CPUScheduler *cpu_sch;
     /* IOSystem *io_sys; */
-      ReadyQueue *ready_q;
-    /* IOQueue *io_q; */
+    ReadyQueue *ready_q;
+    IOQueue *io_q;
     /* DoublyLinkedList *ll; */
     sem_t sem_name;
 } MainThread;
@@ -88,5 +89,7 @@ typedef struct MainThread {
 
 void *read_file(void *f);
 void *cpu_scheduler(void *arg);
+void *io_system(void *arg);
+void display_metrics(MainThread *main_thread);
 
 #endif

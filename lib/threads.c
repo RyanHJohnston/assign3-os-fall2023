@@ -8,7 +8,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <semaphore.h>
+#include <unistd.h>
 
+/**
+ * @brief Reads input file, creates process, and adds to ready queue line by line
+ *
+ * @param MainThread *f
+ */
 void *read_file(void *f) {
     /* FileRead *ftemp; */
     MainThread *temp;
@@ -20,11 +26,11 @@ void *read_file(void *f) {
     int count;
     struct timespec ts_begin, ts_end;
     double elapsed;
-    long sleep_time_ms;
+    useconds_t sleep_time_ms;
     sem_t sem_cpu;
 
-    printf("file read reached\n");
-    /* ftemp = (FileRead*)f; */
+    printf("---------- FILE READ THREAD ----------\n");
+
     temp = (MainThread*)f;
     fp = fopen(temp->input_file->filename, "r");
     if (fp == NULL) {
@@ -95,7 +101,6 @@ void *read_file(void *f) {
             /* get io bursts */
             count = temp->input_file->proc->numIOBurst;
             for (i = 0; i < count; ++i) {
-                /* printf("Value %d Index %i\n", currentLine.data.processData.values[3 + i*2], 3 + i*2); */
                 temp->input_file->proc->IOBurst[i] = currentLine.data.processData.values[3 + i*2];
             }
 
@@ -125,7 +130,9 @@ void *read_file(void *f) {
             sscanf(line, "%*s %d", &currentLine.data.sleepData.duration);
             printf("Processed 'sleep' with duration %d\n", currentLine.data.sleepData.duration);
 
-
+            /* sleep for given amount of ms */
+            sleep_time_ms = currentLine.data.sleepData.duration * MS_CONVERT;
+            usleep(sleep_time_ms);
         } else if (strcmp(type_str, "stop") == 0) {
             currentLine.type = TYPE_STOP;
             printf("Processed 'stop: exiting...\n");
@@ -136,11 +143,8 @@ void *read_file(void *f) {
         }
     }
 
+    printf("---------- FILE READ THREAD END ----------\n\n");
 
-
-
-
-    printf("\nEnd of file read program\n\n");    
     fclose(fp);
     pthread_exit(f);
 }
@@ -159,9 +163,12 @@ void *read_file(void *f) {
 void *cpu_scheduler(void *arg) {
     MainThread *main_thread;
 
-
+    printf("---------- CPU SCHEDULER THREAD ----------\n");
     main_thread = (MainThread*)arg;
+    useconds_t sleep_time_ms;
+    int i;
 
+    display_queue(main_thread->ready_q);
 
     while (true) {
         /* this will be done using a while(1) loop */
@@ -169,7 +176,6 @@ void *cpu_scheduler(void *arg) {
             /* check algorithm name */
             if (strcmp(main_thread->alg, "FIFO") == 0) {
                 /* fifo alg */ 
-                printf("%s detected\n", main_thread->alg);
                 PCB *p;
                 p = dequeue(main_thread->ready_q);
                 if (p == NULL) {
@@ -177,10 +183,19 @@ void *cpu_scheduler(void *arg) {
                     continue;
                 }
                 /* simulate the process */
-                
+                printf("Dequeued PID: %d\n", p->PID);
+                display_queue(main_thread->ready_q);
 
-                
+                for (i = 0; i < p->numCPUBurst; ++i) {
+                    sleep_time_ms = p->CPUBurst[i] * MS_CONVERT;
+                    usleep(sleep_time_ms);
+                }
+
+                /* add to the io queue */
+                io_enqueue(main_thread->io_q, p);
+
                 /* once done with handling process in cpu scheduler, add to io queue */
+
             } else if (strcmp(main_thread->alg, "SJF") == 0) {
                 /* sjf alg */
                 printf("%s detected\n", main_thread->alg);
@@ -195,16 +210,70 @@ void *cpu_scheduler(void *arg) {
                 pthread_exit(NULL);
             }
         } else {
-            printf("\n QUEUE IS EMPTY, EXITING SCHEDULER\n");
+            printf("---------- CPU SCHEDULER THREAD END ----------\n\n");
             pthread_exit(arg);
         }
     }
     
-    fprintf(stderr, "ERROR: Not condition was met in the CPU scheduler, fix this!!!!\n");
+    fprintf(stderr, "ERROR: No condition met in CPU Scheduler Thread\n");
+    pthread_exit(NULL);
+}
+
+/* io system thread only uses FIFO when choosing the proc from the io queue */
+void *io_system(void *arg) {
+    MainThread *main_thread;
+
+    main_thread = (MainThread*)arg;
+
+    if (strcmp(main_thread->alg, "FIFO") == 1) {
+        fprintf(stderr, "\nIO System Thread can only be used in FIFO, skipping\n\n");
+        pthread_exit(NULL);
+    }
+
+    int i;
+    PCB *p;
+    useconds_t sleep_time_ms;
+    
+    printf("---------- IO SYSTEM THREAD ----------\n");
+    while (true) {
+        if (!io_is_empty(main_thread->io_q)) {
+
+            p = io_dequeue(main_thread->io_q);
+            if (p == NULL) {
+                fprintf(stderr, "ERROR: failed to dequeue IO process\n");
+            }
+
+            printf("Dequeued PID: %d\n", p->PID);
+            io_display_queue(main_thread->io_q);
+
+            for (i = 0; i < p->numIOBurst; ++i) {
+                sleep_time_ms = p->IOBurst[i] * MS_CONVERT;
+                usleep(sleep_time_ms);
+            }
+
+            /* add back to ready queue  */
+            enqueue(main_thread->ready_q, p);
+        } else {
+            printf("---------- IO SYSTEM THREAD END ----------\n\n");
+            pthread_exit(arg);
+        }
+    }
+    
+    fprintf(stderr, "ERROR: No condition met in IO System Thread\n");
     pthread_exit(NULL);
 }
 
 
+void display_metrics(MainThread *main_thread) {
+    printf("-------------------------------------------------------\n");
+    printf("Input File Name                 : %s\n", main_thread->input_file->filename);
+    printf("CPU Scheduling Alg              : %s\n", main_thread->alg);
+    printf("CPU Utilization                 : %f%%\n", 0.0);
+    printf("Throughput                      : %f processes / ms\n", 0.0);
+    printf("Avg. Turnaround Time            : %f ms\n", 0.0);
+    printf("Avg. Waiting Time in R Queue    : %f ms\n", 0.0);
+    printf("-------------------------------------------------------\n");
+}
 
 int gen_rand_pid() {
     return PID_MIN + rand() % (PID_MAX + 1 - PID_MIN);

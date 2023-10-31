@@ -14,21 +14,26 @@ int is_empty(ReadyQueue *q) {
 
 void enqueue(ReadyQueue *q, PCB *p) {
     PCB *temp_p;
-    
-    printf("assign vals reached\n");
+
     temp_p = (PCB*)malloc(sizeof(PCB));
     temp_p->PID = p->PID;
     temp_p->PR = p->PR;
     temp_p->numCPUBurst = p->numCPUBurst;
     temp_p->numIOBurst = p->numIOBurst;
-    temp_p->CPUBurst = p->CPUBurst;
-    temp_p->IOBurst = p->IOBurst;
+    
+    
+    temp_p->CPUBurst = malloc(sizeof(int) * p->numCPUBurst);
+    temp_p->IOBurst = malloc(sizeof(int) * p->numIOBurst);
+
+    memcpy(temp_p->CPUBurst, p->CPUBurst, sizeof(int) * p->numCPUBurst);
+    memcpy(temp_p->IOBurst, p->IOBurst, sizeof(int) * p->numIOBurst);
+
     temp_p->cpuindex = p->cpuindex;
     temp_p->ioindex = p->ioindex;
     temp_p->ts_begin = p->ts_begin;
     temp_p->ts_end = p->ts_end;
-    temp_p->next = temp_p->next;
-    temp_p->prev = temp_p->prev;
+    temp_p->next = p->next;
+    temp_p->prev = p->prev;
 
     if (q->rear == NULL) {
         q->front = q->rear = temp_p;
@@ -50,9 +55,9 @@ PCB *dequeue(ReadyQueue *q) {
         fprintf(stderr, "ERROR: Failed to allocate memory for temp in dequeue\n");
         return NULL;
     }
-
-    // Deep copy from the front PCB to temp
-    *temp = *q->front;  // This will copy all fields shallowly
+    
+    /* shallow copy  */
+    *temp = *q->front;
 
     temp->CPUBurst = malloc(sizeof(int) * q->front->numCPUBurst);
     temp->IOBurst = malloc(sizeof(int) * q->front->numIOBurst);
@@ -68,7 +73,7 @@ PCB *dequeue(ReadyQueue *q) {
     memcpy(temp->CPUBurst, q->front->CPUBurst, sizeof(int) * q->front->numCPUBurst);
     memcpy(temp->IOBurst, q->front->IOBurst, sizeof(int) * q->front->numIOBurst);
 
-    // Remove the front PCB from the ReadyQueue and free its memory
+    /* Remove the front PCB from the ReadyQueue and free its memory */
     PCB *toFree = q->front;
     q->front = q->front->next;
     if (q->front == NULL) {
@@ -77,17 +82,16 @@ PCB *dequeue(ReadyQueue *q) {
         q->front->prev = NULL;  // Set the prev pointer of the new front to NULL
     }
 
-    /* free(toFree->CPUBurst); */
-    /* free(toFree->IOBurst); */
-    /* free(toFree); */
+    free(toFree->CPUBurst);
+    free(toFree->IOBurst);
+    free(toFree);
 
     // Clear out next and prev pointers from the copied PCB
     temp->next = NULL;
     temp->prev = NULL;
-    
-    
-    return temp;
 
+
+    return temp;
 }
 
 void display_queue(ReadyQueue *q) {
@@ -104,7 +108,7 @@ void display_queue(ReadyQueue *q) {
         printf("%i -> ", temp->PID);
         temp = temp->next;
     }
-    printf("\nEnd of queue\n");
+    printf("\n");
 }
 
 
@@ -118,6 +122,26 @@ int io_is_empty(IOQueue *q) {
 
 void io_enqueue(IOQueue *q, PCB *p) {
     PCB *temp_p;
+
+    temp_p = (PCB*)malloc(sizeof(PCB));
+    temp_p->PID = p->PID;
+    temp_p->PR = p->PR;
+    temp_p->numCPUBurst = p->numCPUBurst;
+    temp_p->numIOBurst = p->numIOBurst;
+    
+    
+    temp_p->CPUBurst = malloc(sizeof(int) * p->numCPUBurst);
+    temp_p->IOBurst = malloc(sizeof(int) * p->numIOBurst);
+
+    memcpy(temp_p->CPUBurst, p->CPUBurst, sizeof(int) * p->numCPUBurst);
+    memcpy(temp_p->IOBurst, p->IOBurst, sizeof(int) * p->numIOBurst);
+
+    temp_p->cpuindex = p->cpuindex;
+    temp_p->ioindex = p->ioindex;
+    temp_p->ts_begin = p->ts_begin;
+    temp_p->ts_end = p->ts_end;
+    temp_p->next = p->next;
+    temp_p->prev = p->prev;
 
     if (q->rear == NULL) {
         q->front = q->rear = temp_p;
@@ -139,9 +163,9 @@ PCB *io_dequeue(IOQueue *q) {
         fprintf(stderr, "ERROR: Failed to allocate memory for temp in dequeue\n");
         return NULL;
     }
-
-    // Deep copy from the front PCB to temp
-    *temp = *q->front;  // This will copy all fields shallowly
+    
+    /* shallow copy  */
+    *temp = *q->front;
 
     temp->CPUBurst = malloc(sizeof(int) * q->front->numCPUBurst);
     temp->IOBurst = malloc(sizeof(int) * q->front->numIOBurst);
@@ -157,7 +181,7 @@ PCB *io_dequeue(IOQueue *q) {
     memcpy(temp->CPUBurst, q->front->CPUBurst, sizeof(int) * q->front->numCPUBurst);
     memcpy(temp->IOBurst, q->front->IOBurst, sizeof(int) * q->front->numIOBurst);
 
-    // Remove the front PCB from the ReadyQueue and free its memory
+    /* Remove the front PCB from the ReadyQueue and free its memory */
     PCB *toFree = q->front;
     q->front = q->front->next;
     if (q->front == NULL) {
@@ -173,15 +197,13 @@ PCB *io_dequeue(IOQueue *q) {
     // Clear out next and prev pointers from the copied PCB
     temp->next = NULL;
     temp->prev = NULL;
-    
-    
-    return temp;
 
+    return temp;
 }
 
 void io_display_queue(IOQueue *q) {
-     if (io_is_empty(q)) {
-        printf("IOQueue is empty\n");
+    if (io_is_empty(q)) {
+        /* fprintf(stderr, "Ready Queue is empty\n"); */
         return;
     }
 
@@ -193,7 +215,7 @@ void io_display_queue(IOQueue *q) {
         printf("%i -> ", temp->PID);
         temp = temp->next;
     }
-    printf("\nEnd of queue\n");
+    printf("\n");
 }
 
 

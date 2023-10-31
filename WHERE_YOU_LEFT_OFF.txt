@@ -15,3 +15,9 @@ the same data for all of them
 the project should basically be "done" by then
 just do any necessary data clean up
 then finally do testing on the fox servers
+
+
+10/30/23
+Just finished building the pipeline
+Try to gather metrics and display them with just FIFO
+Once metrics are complete, write out the remaining algorithms

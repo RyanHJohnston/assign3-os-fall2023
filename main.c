@@ -61,29 +61,40 @@ int main(int argc, char *argv[]) {
         main_thread->quant = 0;
         main_thread->input_file->filename = argv[4]; 
         main_thread->ready_q = (ReadyQueue*)malloc(sizeof(ReadyQueue));
+        main_thread->io_q = (IOQueue*)malloc(sizeof(IOQueue));
         main_thread->cpu_sch = (CPUScheduler*)malloc(sizeof(CPUScheduler));        
         init_ready_queue(main_thread->ready_q);
-        
+        init_io_queue(main_thread->io_q);
+
         /* create semaphore for following threads  */
         sem_init(&main_thread->sem_name, 0, 0);
         
-        /* File read thread & cpu sched thread */
+        /* File read, cpu scheduler, and io system threads */
         pthread_create(&tid1, NULL, read_file, (void *)main_thread);
         pthread_join(tid1, (void **)&main_thread);
         
         pthread_create(&tid2, NULL, cpu_scheduler, (void *)main_thread);
         pthread_join(tid2, (void **)&main_thread);
-        
+
+        pthread_create(&tid3, NULL, io_system, (void *)main_thread);
+        pthread_join(tid3, (void **)&main_thread);
+
         sem_destroy(&main_thread->sem_name);
         
-        printf("sch thread done\n");
+        /* display metrics  */
+        display_metrics(main_thread);
+
 
     } else { // RR
         printf("Else was reached\n");
     }
-    
+
+
+    printf("\nEND OF PROGRAM\n");
     /* free_new_args(argc, new_argv); */
     free(main_thread->input_file);
+    free(main_thread->ready_q);
+    free(main_thread->io_q);
     free(main_thread);
 
     
