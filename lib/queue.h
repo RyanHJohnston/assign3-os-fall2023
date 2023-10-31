@@ -36,5 +36,9 @@ void io_display_queue(IOQueue *q);
 /* doubly linked list functions */
 
 
+/* algorithms */
+PCB* find_shortest_job(ReadyQueue *ready_q);
+PCB* find_highest_priority_job(ReadyQueue *ready_q);
+void remove_from_queue(ReadyQueue *q, PCB *p);
 
 #endif

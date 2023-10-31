@@ -218,7 +218,49 @@ void io_display_queue(IOQueue *q) {
     printf("\n");
 }
 
+PCB* find_shortest_job(ReadyQueue* ready_q) {
+    PCB *shortest_job = NULL;
+    PCB *current;
+    int shortest_time = INT_MAX;
 
+    // Iterate through the ready queue
+    for(current = ready_q->front; current != NULL; current = current->next) {
+        if(current->CPUBurst[current->cpuindex] < shortest_time) {
+            shortest_time = current->CPUBurst[current->cpuindex];
+            shortest_job = current;
+        }
+    }
+    
+    return shortest_job;
+}
 
+PCB* find_highest_priority_job(ReadyQueue* ready_q) {
+    PCB *highest_priority_job = NULL;
+    PCB *current;
+    int highest_priority = INT_MIN;
 
+    // Iterate through the ready queue
+    for(current = ready_q->front; current != NULL; current = current->next) {
+        if(current->PR > highest_priority) {
+            highest_priority = current->PR;
+            highest_priority_job = current;
+        }
+    }
+    
+    return highest_priority_job;
+}
+
+void remove_from_queue(ReadyQueue *q, PCB *p) {
+    if (p->prev) {
+        p->prev->next = p->next;
+    } else {
+        q->front = p->next;
+    }
+    
+    if (p->next) {
+        p->next->prev = p->prev;
+    } else {
+        q->rear = p->prev;
+    }
+}
 

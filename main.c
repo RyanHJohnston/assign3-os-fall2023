@@ -9,24 +9,6 @@
 #include <string.h>
 #include <time.h>
 
-/* -------- DIRECTIONS ----------------*/
-/*
- * input: prog -alg [FIFO|SJF|PR|RR] [-quantum [integer (ms)]] -input [file name]
- * output:   Input File Name              : input file name
-
-     CPU Scheduling Alg           : FIFO|SJF|PR|RR (quantum)
-
-     CPU utilization              : ....
-
-     Throughput                   : ....
-
-     Avg. Turnaround time         : ....
-
-     Avg. Waiting time in R queue : ....
-*/
-
-
-
 int main(int argc, char *argv[]) {
     
     if (is_valid(argc, argv) == 1) {
@@ -101,17 +83,13 @@ int main(int argc, char *argv[]) {
 
 
     } else { // RR
-        printf("Else was reached\n");
+        printf("No code was written for RR, sorry about that.\n");
     }
 
-
-    printf("\nEND OF PROGRAM\n");
-    /* free_new_args(argc, new_argv); */
     free(main_thread->input_file);
     free(main_thread->ready_q);
     free(main_thread->io_q);
     free(main_thread);
-
     
     return 0;
 }

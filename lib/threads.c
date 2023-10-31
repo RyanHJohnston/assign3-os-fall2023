@@ -2,6 +2,7 @@
 #include "lib.h"
 #include "proc.h"
 #include "queue.h"
+#include <bits/time.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -31,8 +32,6 @@ void *read_file(void *f) {
     double elapsed;
     useconds_t sleep_time_ms;
     sem_t sem_cpu;
-
-    printf("---------- FILE READ THREAD ----------\n");
 
     main_thread = (MainThread*)f;
     fp = fopen(main_thread->input_file->filename, "r");
@@ -114,7 +113,7 @@ void *read_file(void *f) {
             /* i think this will be for the doubly linked list */
             main_thread->input_file->proc->prev = NULL;
             main_thread->input_file->proc->next = NULL;
-            
+
             /* starts tracking time of the process entering the ready queue */
             /* ts_begin is for the waiting time */
             /* ts_turnaround_begin is for the turnaround time */
@@ -138,7 +137,6 @@ void *read_file(void *f) {
         } else if (strcmp(type_str, "sleep") == 0) {
             currentLine.type = TYPE_SLEEP;
             sscanf(line, "%*s %d", &currentLine.data.sleepData.duration);
-            printf("Processed 'sleep' with duration %d\n", currentLine.data.sleepData.duration);
 
             /* clock_gettime(CLOCK_MONOTONIC, &ts_begin); */
             sleep_time_ms = currentLine.data.sleepData.duration;
@@ -150,15 +148,12 @@ void *read_file(void *f) {
             /* main_thread->total_wait_time += elapsed; */
         } else if (strcmp(type_str, "stop") == 0) {
             currentLine.type = TYPE_STOP;
-            printf("Processed 'stop: exiting...\n");
             break;
         } else {
             fprintf(stderr, "ERROR: No enums were met when reading %s\n", main_thread->input_file->filename);
             exit(EXIT_FAILURE);
         }
     }
-
-    printf("---------- FILE READ THREAD END ----------\n\n");
 
     fclose(fp);
     pthread_exit(f);
@@ -178,7 +173,6 @@ void *read_file(void *f) {
 void *cpu_scheduler(void *arg) {
     MainThread *main_thread;
 
-    printf("---------- CPU SCHEDULER THREAD ----------\n");
     main_thread = (MainThread*)arg;
     double wait_time;
     double throughput;
@@ -196,8 +190,6 @@ void *cpu_scheduler(void *arg) {
     processes_handled = 0;
     clock_gettime(CLOCK_MONOTONIC, &ts_begin);
 
-    display_queue(main_thread->ready_q);
-
     while (true) {
         /* this will be done using a while(1) loop */
         if (!is_empty(main_thread->ready_q)) {
@@ -210,12 +202,11 @@ void *cpu_scheduler(void *arg) {
 
                 PCB *p;
                 p = dequeue(main_thread->ready_q);
-                
+
                 /* gets the wait time of the processes in the ready queue */
                 wait_time = (ts_now.tv_sec - p->ts_begin.tv_sec);
                 wait_time += (ts_now.tv_nsec - p->ts_begin.tv_nsec) / SEC_CONVERT;
-                printf("Wait Time for PID %d: %.3lf ms\n", p->PID, wait_time);
-                
+
                 /* assigns waiting time ready queue for PCB and iterates total waitimg time */
                 p->wait_time_ready_q = wait_time;
                 main_thread->total_wait_time += wait_time;
@@ -224,10 +215,8 @@ void *cpu_scheduler(void *arg) {
                     fprintf(stderr, "ERROR: failed to dequeue process\n");
                     continue;
                 }
-                /* simulate the process */
-                printf("Dequeued PID: %d\n", p->PID);
-                display_queue(main_thread->ready_q);
                 
+                /* simulate the process */
                 clock_gettime(CLOCK_MONOTONIC, &ts_turnaround_begin);
                 for (i = 0; i < p->numCPUBurst; ++i) {
                     sleep_time_ms = p->CPUBurst[i] * MS_CONVERT;
@@ -246,19 +235,60 @@ void *cpu_scheduler(void *arg) {
 
             } else if (strcmp(main_thread->alg, "SJF") == 0) {
                 /* sjf alg */
-                printf("%s detected\n", main_thread->alg);
+                PCB *p = find_shortest_job(main_thread->ready_q);
+                if (p == NULL) {
+                    fprintf(stderr, "ERROR: No process found for SJF\n");
+                    continue;
+                }
+                remove_from_queue(main_thread->ready_q, p);  // Assuming this function removes a given PCB from the queue
+
+                /* simulate the process */
+                clock_gettime(CLOCK_MONOTONIC, &ts_turnaround_begin);
+                for (i = 0; i < p->numCPUBurst; ++i) {
+                    sleep_time_ms = p->CPUBurst[i] * MS_CONVERT;
+                    usleep(sleep_time_ms);
+                    main_thread->total_cpu_active_time += (double)sleep_time_ms / 1000.0;
+                }
+                clock_gettime(CLOCK_MONOTONIC, &ts_turnaround_end);
+                turnaround_time_ms = (ts_turnaround_end.tv_sec - ts_turnaround_begin.tv_sec) * MS_CONVERT;
+                turnaround_time_ms += (ts_turnaround_end.tv_nsec - ts_turnaround_begin.tv_nsec) / SEC_CONVERT;
+                main_thread->total_turnaround_time += turnaround_time_ms;
+
+                /* add to the io queue */
+                io_enqueue(main_thread->io_q, p);
             } else if (strcmp(main_thread->alg, "PR") == 0) {
                 /* pr alg */
-                printf("%s detected\n", main_thread->alg);
+                PCB *p = find_highest_priority_job(main_thread->ready_q);
+
+                if (p == NULL) {
+                    fprintf(stderr, "ERROR: No process found for PR\n");
+                    continue;
+                }
+
+                remove_from_queue(main_thread->ready_q, p);  // Assuming this function removes a given PCB from the queue
+
+                /* simulate the process */
+                clock_gettime(CLOCK_MONOTONIC, &ts_turnaround_begin);
+                for (i = 0; i < p->numCPUBurst; ++i) {
+                    sleep_time_ms = p->CPUBurst[i] * MS_CONVERT;
+                    usleep(sleep_time_ms);
+                    main_thread->total_cpu_active_time += (double)sleep_time_ms / 1000.0;
+                }
+                clock_gettime(CLOCK_MONOTONIC, &ts_turnaround_end);
+                turnaround_time_ms = (ts_turnaround_end.tv_sec - ts_turnaround_begin.tv_sec) * MS_CONVERT;
+                turnaround_time_ms += (ts_turnaround_end.tv_nsec - ts_turnaround_begin.tv_nsec) / SEC_CONVERT;
+                main_thread->total_turnaround_time += turnaround_time_ms;
+
+                /* add to the io queue */
+                io_enqueue(main_thread->io_q, p);
             } else if (strcmp(main_thread->alg, "RR") == 0) {
-                /* pr alg */
+                /* RR alg */
                 printf("%s detected\n", main_thread->alg);
             } else {
                 fprintf(stderr, "ERROR: Algorithm not detected in CPUScheduler thread\n");
                 pthread_exit(NULL);
             }
         } else {
-            printf("---------- CPU SCHEDULER THREAD END ----------\n\n");
 
             /* measure throughput given the process count and times */
             clock_gettime(CLOCK_MONOTONIC, &ts_end);
@@ -299,8 +329,6 @@ void *io_system(void *arg) {
         pthread_exit(NULL);
     }
 
-    printf("---------- IO SYSTEM THREAD ----------\n");
-
     /* init processes handled and begin measuring time taken for each process */
     processes_handled = 0;
     clock_gettime(CLOCK_MONOTONIC, &ts_begin);
@@ -312,21 +340,18 @@ void *io_system(void *arg) {
             ++processes_handled;
 
             p = io_dequeue(main_thread->io_q);
-            
+
             /* gets the wait time of the processes in the ready queue */
             wait_time = (ts_now.tv_sec - p->ts_begin.tv_sec);
             wait_time += (ts_now.tv_nsec - p->ts_begin.tv_nsec) / SEC_CONVERT;
             p->wait_time_ready_q = wait_time;
             main_thread->total_wait_time += wait_time;
-            
+
 
             if (p == NULL) {
                 fprintf(stderr, "ERROR: failed to dequeue IO process\n");
             }
 
-            printf("Dequeued PID: %d\n", p->PID);
-            io_display_queue(main_thread->io_q);
-            
             clock_gettime(CLOCK_MONOTONIC, &ts_turnaround_begin);
             for (i = 0; i < p->numIOBurst; ++i) {
                 sleep_time_ms = p->IOBurst[i] * MS_CONVERT;
@@ -341,8 +366,7 @@ void *io_system(void *arg) {
             /* add back to ready queue  */
             enqueue(main_thread->ready_q, p);
         } else {
-            printf("---------- IO SYSTEM THREAD END ----------\n\n");
-            
+
             /* calculating total throughput */
             clock_gettime(CLOCK_MONOTONIC, &ts_end);
             throughput_elapsed_time = (ts_end.tv_sec - ts_begin.tv_sec) * MS_CONVERT;
@@ -373,12 +397,4 @@ void display_metrics(MainThread *main_thread) {
 int gen_rand_pid() {
     return PID_MIN + rand() % (PID_MAX + 1 - PID_MIN);
 }
-
-
-
-
-
-
-
-
 

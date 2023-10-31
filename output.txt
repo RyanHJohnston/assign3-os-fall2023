@@ -1,0 +1,109 @@
+
+./main.o -alg FIFO -input docs/ex_input.txt
+-------------------------------------------------------
+Input File Name                 : docs/ex_input.txt
+CPU Scheduling Alg              : FIFO
+CPU Utilization                 : 83.570%
+Throughput                      : 0.019 processes / ms
+Avg. Turnaround Time            : 0.1ms
+Avg. Waiting Time in R Queue    : 63.0ms
+-------------------------------------------------------
+./main.o -alg SJF -input docs/ex_input.txt
+-------------------------------------------------------
+Input File Name                 : docs/ex_input.txt
+CPU Scheduling Alg              : SJF
+CPU Utilization                 : 78.698%
+Throughput                      : 0.008 processes / ms
+Avg. Turnaround Time            : 0.1ms
+Avg. Waiting Time in R Queue    : 24.3ms
+-------------------------------------------------------
+./main.o -alg PR -input docs/ex_input.txt
+-------------------------------------------------------
+Input File Name                 : docs/ex_input.txt
+CPU Scheduling Alg              : PR
+CPU Utilization                 : 62.270%
+Throughput                      : 0.010 processes / ms
+Avg. Turnaround Time            : 0.0ms
+Avg. Waiting Time in R Queue    : 4.9ms
+-------------------------------------------------------
+./main.o -alg FIFO -input docs/ex_input.txt
+-------------------------------------------------------
+Input File Name                 : docs/ex_input.txt
+CPU Scheduling Alg              : FIFO
+CPU Utilization                 : 83.650%
+Throughput                      : 0.009 processes / ms
+Avg. Turnaround Time            : 199.9ms
+Avg. Waiting Time in R Queue    : 62.9ms
+-------------------------------------------------------
+./main.o -alg SJF -input docs/ex_input.txt
+-------------------------------------------------------
+Input File Name                 : docs/ex_input.txt
+CPU Scheduling Alg              : SJF
+CPU Utilization                 : 78.962%
+Throughput                      : 0.008 processes / ms
+Avg. Turnaround Time            : 0.1ms
+Avg. Waiting Time in R Queue    : 24.2ms
+-------------------------------------------------------
+./main.o -alg PR -input docs/ex_input.txt
+-------------------------------------------------------
+Input File Name                 : docs/ex_input.txt
+CPU Scheduling Alg              : PR
+CPU Utilization                 : 62.486%
+Throughput                      : 0.010 processes / ms
+Avg. Turnaround Time            : 0.0ms
+Avg. Waiting Time in R Queue    : 4.9ms
+-------------------------------------------------------
+./main.o -alg FIFO -input docs/ex_input.txt
+-------------------------------------------------------
+Input File Name                 : docs/ex_input.txt
+CPU Scheduling Alg              : FIFO
+CPU Utilization                 : 83.721%
+Throughput                      : 0.019 processes / ms
+Avg. Turnaround Time            : 0.1ms
+Avg. Waiting Time in R Queue    : 62.9ms
+-------------------------------------------------------
+./main.o -alg SJF -input docs/ex_input.txt
+-------------------------------------------------------
+Input File Name                 : docs/ex_input.txt
+CPU Scheduling Alg              : SJF
+CPU Utilization                 : 78.964%
+Throughput                      : 0.008 processes / ms
+Avg. Turnaround Time            : 199.9ms
+Avg. Waiting Time in R Queue    : 24.2ms
+-------------------------------------------------------
+./main.o -alg PR -input docs/ex_input.txt
+-------------------------------------------------------
+Input File Name                 : docs/ex_input.txt
+CPU Scheduling Alg              : PR
+CPU Utilization                 : 62.284%
+Throughput                      : 0.010 processes / ms
+Avg. Turnaround Time            : 0.0ms
+Avg. Waiting Time in R Queue    : 4.9ms
+-------------------------------------------------------
+./main.o -alg FIFO -input docs/ex_input.txt
+-------------------------------------------------------
+Input File Name                 : docs/ex_input.txt
+CPU Scheduling Alg              : FIFO
+CPU Utilization                 : 83.792%
+Throughput                      : 0.010 processes / ms
+Avg. Turnaround Time            : 199.9ms
+Avg. Waiting Time in R Queue    : 62.7ms
+-------------------------------------------------------
+./main.o -alg SJF -input docs/ex_input.txt
+-------------------------------------------------------
+Input File Name                 : docs/ex_input.txt
+CPU Scheduling Alg              : SJF
+CPU Utilization                 : 79.016%
+Throughput                      : 0.008 processes / ms
+Avg. Turnaround Time            : 0.1ms
+Avg. Waiting Time in R Queue    : 24.2ms
+-------------------------------------------------------
+./main.o -alg PR -input docs/ex_input.txt
+-------------------------------------------------------
+Input File Name                 : docs/ex_input.txt
+CPU Scheduling Alg              : PR
+CPU Utilization                 : 62.518%
+Throughput                      : 0.000 processes / ms
+Avg. Turnaround Time            : 199.8ms
+Avg. Waiting Time in R Queue    : 4.9ms
+-------------------------------------------------------
