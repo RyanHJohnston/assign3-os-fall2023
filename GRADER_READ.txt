@@ -1,0 +1,16 @@
+To run the entire project, simply type:
+./run.sh
+
+The shell script should show everything for you.
+Different outputs are located in the output.txt file as well.
+
+If you want to use the make file, simply type:
+make all
+
+Then you can run any algorithm with the docs/ex_input.txt file:
+make fifo
+make sjf
+make pr
+
+Or if you want to compile directly, you can use this as an example format:
+valgrind ./main.o -alg FIFO -input docs/ex_input.txt

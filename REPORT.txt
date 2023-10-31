@@ -1,0 +1,9 @@
+1. I did this project entirely on my own, I did not receive help from anybody.
+
+2. I think everything I did was correct except for the turnaround time and the RR implementation.
+
+3. All the measurements are working except for the turnaround time. I also couldn't implement the RR
+algorithm simply due to time constraints.
+
+4. This has been by far the most difficult assignment I've ever done in my CS degree. Learned a lot,
+though!
