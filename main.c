@@ -2,8 +2,6 @@
 #include "lib/proc.h"
 #include "lib/queue.h"
 #include "lib/threads.h"
-#include <bits/pthreadtypes.h>
-#include <bits/time.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <stdio.h>

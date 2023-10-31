@@ -2,8 +2,6 @@
 #include "lib.h"
 #include "proc.h"
 #include "queue.h"
-#include <bits/time.h>
-#include <bits/types/struct_timespec.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
