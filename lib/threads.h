@@ -16,7 +16,8 @@
 #define PID_MAX 999
 #define PID_MIN 1
 #define DELIM " \n\t"
-#define MS_CONVERT 1000
+#define MS_CONVERT 1000.0
+#define SEC_CONVERT 1000000000.0;
 
 typedef enum LineType{
     TYPE_PROC,
@@ -84,6 +85,14 @@ typedef struct MainThread {
     IOQueue *io_q;
     /* DoublyLinkedList *ll; */
     sem_t sem_name;
+    int total_num_processes;
+    double cpu_util;
+    double total_cpu_active_time;
+    double throughput;
+    double total_wait_time;
+    double total_turnaround_time;
+    double avg_turnaround_time;
+    double avg_waiting_ready_q_time;
 } MainThread;
 
 

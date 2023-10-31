@@ -19,6 +19,10 @@ typedef struct PCB {
     
     struct timespec ts_begin;
     struct timespec ts_end;
+    struct timespec ts_turnaround_begin;
+
+    double time_enter_ready_q;
+    double wait_time_ready_q;
 
     struct PCB *prev;
     struct PCB *next;
